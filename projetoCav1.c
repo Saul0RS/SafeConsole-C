@@ -38,22 +38,44 @@ char* validar_senha(char senha[50]){
     }
     else{
         return "Sua senha é curta demais !!!\n";
+    }   
+}
+
+char* cifrar_cesar(char palavrac[50], int chavec){
+    for (int i = 0; palavrac[i] != '\0'; i++){
+        palavrac[i] = palavrac[i] + chavec;
     }
-    
+    return palavrac;
+}
+
+char* decifrar_cesar(char palavrac[50], int chavec){
+    for (int i = 0; palavrac[i] != '\0'; i++){
+        palavrac[i] = palavrac[i] - chavec;
+    }
+    return palavrac;
+}
+
+char* cifrar_xor(char palavrax[24], int chavex) {
+    for (int i = 0; palavrax[i] != '\0'; i++) {
+        palavrax[i] = palavrax[i] ^ chavex;   
+    }
+    return palavrax;
 }
 
 int main(){
-    int op = -1;
-    while (op != 0){
-    printf("-===- BEM VINDO AO SAFECONSOLE -===-\n");
+    int op1 = -1;
+    while (op1 != 0){
+    printf("\n-===- BEM VINDO AO SAFECONSOLE -===-\n");
     printf("Selecione as opcoes do menu:\n");
     printf("1 - Sanitizar algum dado\n");
     printf("2 - Validador de Senha\n");
+    printf("3 - Cifra de Cesar\n");
+    printf("4 - Cifrar com XOR\n");
     printf("0 - Sair\n");
     printf("R - ");
-    scanf("%d",&op);
+    scanf("%d",&op1);
 
-    switch (op){
+    switch (op1){
         case 1:
             char dado[50];
             printf("Digite o dado q voce quer sanitizar: ");
@@ -70,6 +92,41 @@ int main(){
             //printf("%s", validar_senha(senha));
             printf(validar_senha(senha));
             break;
+
+        case 3: 
+            char palavrac[50];
+            int chavec, op2;
+            
+            printf("Digite a opcao:\n1 - criptografar\n2 - descriptografar\n");
+            scanf("%d",&op2);
+            if (op2 == 1){
+                printf("Digite uma palavra a ser cifrada: ");
+                scanf("%s", palavrac);
+                printf("Digite o valor da chave da cifragem: ");
+                scanf("%d", &chavec);
+                printf("A palavra na forma cifrada e: %s", cifrar_cesar(palavrac,chavec));
+            }
+
+            else if (op2 == 2){
+                printf("Digite uma palavra a ser decifrada: ");
+                scanf("%s",palavrac);
+                printf("Digite a chave usada na cifragem para decifrar: ");
+                scanf("%d",&chavec);
+                printf("A palavra decifrada e: %s", decifrar_cesar(palavrac, chavec));
+            }
+            break;
+        
+        case 4:
+            char palavrax[50];
+            int chavex;
+
+            printf("Digite a palavra para cifrar OU decifrar: ");
+            scanf("%s",palavrax);
+            printf("Digite a chave usada para cifrar ou decifrar: ");
+            scanf("%d",&chavex);
+            printf("A palavra cifrada em hexadecimal e: %02x\n e em texto normal: %s", cifrar_xor(palavrax, chavex));
+            break;
+
         case 0:
             printf("TCHAU");
             break;
