@@ -62,8 +62,37 @@ char* cifrar_xor(char palavrax[24], int chavex) {
     return palavrax;
 }
 
+void registra_log(char *log, char historico[][256], int *totalLogs){
+    if (*totalLogs < 100){
+        strncpy(historico[*totalLogs], log, 255);
+        historico[*totalLogs][255] = '\0';
+        (*totalLogs)++;
+    }
+    else{
+        printf("QUANTIDADE MAXIMA DE LOGS ALCANÇADA");
+    }  
+}
+
+int verifica_log(char *log, char historico[][256], int *totalLogs){
+    for (int i = 0; i <*totalLogs; i++){
+        if (strcmp(historico[i], log) == 0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+void lista_log(char historico[][256], int *totalLogs){
+    printf("-===- REGISTRO DE LOGS DIGITADOS DO USUARIO -===-\n");
+    for (int i = 0; i != *totalLogs; i++){
+        printf("%d - %s", i, historico[i]);
+    }
+}
+
 int main(){
-    int op1 = -1;
+    char historico[100][256], verifica[256];
+    int  totalLogs = 0, op1 = -1;
+
     while (op1 != 0){
     printf("\n-===- BEM VINDO AO SAFECONSOLE -===-\n");
     printf("Selecione as opcoes do menu:\n");
@@ -71,6 +100,7 @@ int main(){
     printf("2 - Validador de Senha\n");
     printf("3 - Cifra de Cesar\n");
     printf("4 - Cifrar com XOR\n");
+    printf("5 - Logs de Auditoria\n");
     printf("0 - Sair\n");
     printf("R - ");
     scanf("%d",&op1);
@@ -81,6 +111,7 @@ int main(){
             printf("Digite o dado q voce quer sanitizar: ");
             getchar();
             fgets(dado,sizeof(dado),stdin);
+            registra_log(dado, historico, &totalLogs);
             printf("Seu dado sanitizado: %s", mascara_dados(dado));
             break;
         
@@ -89,29 +120,35 @@ int main(){
             printf("Digite a senha para ser validada: ");
             getchar();
             fgets(senha,sizeof(senha),stdin);
-            //printf("%s", validar_senha(senha));
+            registra_log(senha, historico, &totalLogs);
             printf(validar_senha(senha));
             break;
 
         case 3: 
             char palavrac[50];
-            int chavec, op2;
+            int chavec, op2;    
             
             printf("Digite a opcao:\n1 - criptografar\n2 - descriptografar\n");
             scanf("%d",&op2);
             if (op2 == 1){
                 printf("Digite uma palavra a ser cifrada: ");
-                scanf("%s", palavrac);
+                getchar();
+                fgets(palavrac,sizeof(palavrac),stdin);
+                registra_log(palavrac, historico, &totalLogs);
                 printf("Digite o valor da chave da cifragem: ");
                 scanf("%d", &chavec);
+                //registra_log(chavec, historico, &totalLogs);
                 printf("A palavra na forma cifrada e: %s", cifrar_cesar(palavrac,chavec));
             }
 
             else if (op2 == 2){
                 printf("Digite uma palavra a ser decifrada: ");
-                scanf("%s",palavrac);
+                getchar();
+                fgets(palavrac,sizeof(palavrac),stdin);
+                registra_log(palavrac, historico, &totalLogs);
                 printf("Digite a chave usada na cifragem para decifrar: ");
                 scanf("%d",&chavec);
+                //registra_log(chavec, historico, &totalLogs);
                 printf("A palavra decifrada e: %s", decifrar_cesar(palavrac, chavec));
             }
             break;
@@ -121,11 +158,36 @@ int main(){
             int chavex;
 
             printf("Digite a palavra para cifrar OU decifrar: ");
-            scanf("%s",palavrax);
+            getchar();
+            fgets(palavrax,sizeof(palavrax),stdin);
+            registra_log(palavrax, historico, &totalLogs);
             printf("Digite a chave usada para cifrar ou decifrar: ");
             scanf("%d",&chavex);
+            //registra_log(chavex, historico, &totalLogs);
             printf("A palavra cifrada em hexadecimal e: %02x\n e em texto normal: %s", cifrar_xor(palavrax, chavex));
             break;
+
+        case 5:
+            int op3;    
+            
+            printf("Digite a opcao:\n1 - consultar log\n2 - listar logs\n");
+            scanf("%d",&op3);
+            if (op3 == 1){
+                printf("Digite a algo para verificar se ja foi digitado ou nao: ");
+                getchar();
+                fgets(verifica,sizeof(verifica),stdin);
+                int teste = verifica_log(verifica, historico, &totalLogs);
+                if (teste != -1){
+                    printf("log encontrado na posicao %d do historico de logs: %s", teste, verifica);
+                }
+                else{
+                    printf("Log nao encontrato !!!");
+                }
+                break;
+            }
+            else if (op3 == 2){
+                lista_log(historico, &totalLogs);
+            }
 
         case 0:
             printf("TCHAU");
