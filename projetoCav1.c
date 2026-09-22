@@ -1,16 +1,42 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-char* mascara_dados(char dado[50]){
-    for (int i = 0; i != strlen(dado) - 5; i++){
-        dado[i] = '*';
+// ---------- Helpers ----------
+
+void limpar_buffer(void){
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+void string_para_hex(char *src, char *dest, int tam){
+    dest[0] = '\0';
+    char temp[8];
+    for (int i = 0; src[i] != '\0'; i++){
+        snprintf(temp, sizeof(temp), "%02X ", (unsigned char)src[i]);
+        if ((int)strlen(dest) + (int)strlen(temp) >= tam - 1){
+            break;
+        }
+        strcat(dest, temp);
     }
-    return dado;
+}
+
+// ---------- Etapa 1 ----------
+
+char* mascara_dados(char dado[50]){
+    static char copia[50];
+    strcpy(copia, dado);
+    int len = strlen(copia);
+    if (len <= 4) {
+        return copia;
+    }
+    for (int i = 0; i < len - 4; i++){
+        copia[i] = '*';
+    }
+    return copia;
 }
 
 char* validar_senha(char senha[50]){
-    int contM = 0, contm = 0, contnum;
+    int contM = 0, contm = 0, contnum = 0;
 
     if (strlen(senha) >= 8){
         for (int i = 0; i != strlen(senha); i++){
@@ -20,8 +46,8 @@ char* validar_senha(char senha[50]){
             if (contM){
                 for (int i = 0; i != strlen(senha); i++){
                     if (senha[i] >= 97 && senha[i] <= 122){
-                    contm = 1;
-                    }                
+                        contm = 1;
+                    }
                     if (contm){
                         for (int i = 0; i != strlen(senha); i++){
                             if (senha[i] >= 48 && senha[i] <= 57){
@@ -30,51 +56,82 @@ char* validar_senha(char senha[50]){
                             if(contnum){
                                 return "parabens senha forte\n";
                             }
-                        }return "Sua senha n tem numeros\n";
+                        }
+                        return "Sua senha n tem numeros\n";
                     }
-                }return "Sua senha n tem letra minuscula\n";
+                }
+                return "Sua senha n tem letra minuscula\n";
             }
-        }return "Sua senha n tem letra maiuscula\n";
+        }
+        return "Sua senha n tem letra maiuscula\n";
     }
     else{
         return "Sua senha é curta demais !!!\n";
-    }   
+    }
 }
 
+// ---------- Etapa 2 ----------
+
 char* cifrar_cesar(char palavrac[50], int chavec){
-    for (int i = 0; palavrac[i] != '\0'; i++){
-        palavrac[i] = palavrac[i] + chavec;
-    }
-    return palavrac;
+    static char copia[50];
+    strcpy(copia, palavrac);
+    for (int i = 0; copia[i] != '\0'; i++){
+        if (copia[i] >= 97 && copia[i] <= 122){
+            copia[i] = 97 + (copia[i] - 97 + chavec) % 26;
+        }
+        else if (copia[i] >= 65 && copia[i] <= 90){
+            copia[i] = 65 + (copia[i] - 65 + chavec) % 26;
+        }
+    }   
+
+    return copia;
 }
 
 char* decifrar_cesar(char palavrac[50], int chavec){
-    for (int i = 0; palavrac[i] != '\0'; i++){
-        palavrac[i] = palavrac[i] - chavec;
+    static char copia[50];
+    strcpy(copia, palavrac);
+    for (int i = 0; copia[i] != '\0'; i++){
+        if (copia[i] >= 97 && copia[i] <= 122){
+            copia[i] = 97 + (copia[i] - 97 - chavec % 26 + 26) % 26;
+        }
+        else if (copia[i] >= 65 && copia[i] <= 90){
+            copia[i] = 65 + (copia[i] - 65 - chavec % 26 + 26) % 26;
+        }
     }
-    return palavrac;
+    return copia;
 }
 
-char* cifrar_xor(char palavrax[24], int chavex) {
-    for (int i = 0; palavrax[i] != '\0'; i++) {
-        palavrax[i] = palavrax[i] ^ chavex;   
+char* cifrar_xor(char palavrax[50], char chavex){
+    static char copia[50];
+    strcpy(copia, palavrax);
+    for (int i = 0; copia[i] != '\0'; i++){
+        copia[i] = copia[i] ^ chavex;
     }
-    return palavrax;
+    return copia;
 }
 
-void registra_log(char *log, char historico[][256], int *totalLogs){
+// ---------- Etapa 3 ----------
+
+void registra_log_int(int log, char historico[][256], int *totalLogs){
     if (*totalLogs < 100){
-        strncpy(historico[*totalLogs], log, 255);
-        historico[*totalLogs][255] = '\0';
+        snprintf(historico[*totalLogs], 256, "Opcao: %d", log);
         (*totalLogs)++;
+    } else {
+        printf("QUANTIDADE MAXIMA DE LOGS ALCANCADA\n");
     }
-    else{
-        printf("QUANTIDADE MAXIMA DE LOGS ALCANÇADA");
-    }  
+}
+
+void registra_log_char(char *log, char historico[][256], int *totalLogs){
+    if (*totalLogs < 100){
+        snprintf(historico[*totalLogs], 256, "%s", log);
+        (*totalLogs)++;
+    } else {
+        printf("QUANTIDADE MAXIMA DE LOGS ALCANCADA\n");
+    }
 }
 
 int verifica_log(char *log, char historico[][256], int *totalLogs){
-    for (int i = 0; i <*totalLogs; i++){
+    for (int i = 0; i < *totalLogs; i++){
         if (strcmp(historico[i], log) == 0){
             return i;
         }
@@ -83,125 +140,179 @@ int verifica_log(char *log, char historico[][256], int *totalLogs){
 }
 
 void lista_log(char historico[][256], int *totalLogs){
-    printf("-===- REGISTRO DE LOGS DIGITADOS DO USUARIO -===-\n");
-    for (int i = 0; i != *totalLogs; i++){
-        printf("%d - %s", i, historico[i]);
+    printf("-===- REGISTRO DE LOGS -===-\n");
+    for (int i = 0; i < *totalLogs; i++){
+        printf("%d - %s\n", i + 1, historico[i]);
     }
 }
 
+// ---------- Main ----------
+
 int main(){
-    char historico[100][256], verifica[256];
+    char historico[100][256];
+    char verifica[256];
     int  totalLogs = 0, op1 = -1;
 
-    while (op1 != 0){
-    printf("\n-===- BEM VINDO AO SAFECONSOLE -===-\n");
-    printf("Selecione as opcoes do menu:\n");
-    printf("1 - Sanitizar algum dado\n");
-    printf("2 - Validador de Senha\n");
-    printf("3 - Cifra de Cesar\n");
-    printf("4 - Cifrar com XOR\n");
-    printf("5 - Logs de Auditoria\n");
-    printf("0 - Sair\n");
-    printf("R - ");
-    scanf("%d",&op1);
+    do {
+        printf("\n-===- BEM VINDO AO SAFECONSOLE -===-\n");
+        printf("1 - Sanitizar algum dado\n");
+        printf("2 - Validador de Senha\n");
+        printf("3 - Cifra de Cesar\n");
+        printf("4 - Cifrar com XOR\n");
+        printf("5 - Logs de Auditoria\n");
+        printf("0 - Sair\n");
+        printf("R - ");
 
-    switch (op1){
-        case 1:
-            char dado[50];
-            printf("Digite o dado q voce quer sanitizar: ");
-            getchar();
-            fgets(dado,sizeof(dado),stdin);
-            registra_log(dado, historico, &totalLogs);
-            printf("Seu dado sanitizado: %s", mascara_dados(dado));
-            break;
-        
-        case 2: 
-            char senha[50];
-            printf("Digite a senha para ser validada: ");
-            getchar();
-            fgets(senha,sizeof(senha),stdin);
-            registra_log(senha, historico, &totalLogs);
-            printf(validar_senha(senha));
-            break;
+        scanf("%d", &op1);
+        limpar_buffer();
+        registra_log_int(op1, historico, &totalLogs);
 
-        case 3: 
-            char palavrac[50];
-            int chavec, op2;    
-            
-            printf("Digite a opcao:\n1 - criptografar\n2 - descriptografar\n");
-            scanf("%d",&op2);
-            if (op2 == 1){
-                printf("Digite uma palavra a ser cifrada: ");
-                getchar();
-                fgets(palavrac,sizeof(palavrac),stdin);
-                registra_log(palavrac, historico, &totalLogs);
-                printf("Digite o valor da chave da cifragem: ");
-                scanf("%d", &chavec);
-                //registra_log(chavec, historico, &totalLogs);
-                printf("A palavra na forma cifrada e: %s", cifrar_cesar(palavrac,chavec));
+        switch (op1){
+
+            case 1: {
+                char dado[50];
+                printf("Digite o dado q voce quer sanitizar: ");
+                fgets(dado, sizeof(dado), stdin);
+                dado[strcspn(dado, "\n")] = '\0';
+                registra_log_char(dado, historico, &totalLogs);
+
+                char *mascarado = mascara_dados(dado);
+                printf("Seu dado sanitizado: %s\n", mascarado);
+                registra_log_char(mascarado, historico, &totalLogs);
+                break;
             }
 
-            else if (op2 == 2){
-                printf("Digite uma palavra a ser decifrada: ");
-                getchar();
-                fgets(palavrac,sizeof(palavrac),stdin);
-                registra_log(palavrac, historico, &totalLogs);
-                printf("Digite a chave usada na cifragem para decifrar: ");
-                scanf("%d",&chavec);
-                //registra_log(chavec, historico, &totalLogs);
-                printf("A palavra decifrada e: %s", decifrar_cesar(palavrac, chavec));
+            case 2: {
+                char senha[50];
+                printf("Digite a senha: ");
+                fgets(senha, sizeof(senha), stdin);
+                senha[strcspn(senha, "\n")] = '\0';
+                registra_log_char(senha, historico, &totalLogs);
+
+                char *resultado = validar_senha(senha);
+                printf("%s", resultado);
+                registra_log_char(resultado, historico, &totalLogs);
+                break;
             }
-            break;
-        
-        case 4:
-            char palavrax[50];
-            int chavex;
 
-            printf("Digite a palavra para cifrar OU decifrar: ");
-            getchar();
-            fgets(palavrax,sizeof(palavrax),stdin);
-            registra_log(palavrax, historico, &totalLogs);
-            printf("Digite a chave usada para cifrar ou decifrar: ");
-            scanf("%d",&chavex);
-            //registra_log(chavex, historico, &totalLogs);
-            printf("A palavra cifrada em hexadecimal e: %02x\n e em texto normal: %s", cifrar_xor(palavrax, chavex));
-            break;
+            case 3: {
+                char palavrac[50];
+                int  chavec, op2;
 
-        case 5:
-            int op3;    
-            
-            printf("Digite a opcao:\n1 - consultar log\n2 - listar logs\n");
-            scanf("%d",&op3);
-            if (op3 == 1){
-                printf("Digite a algo para verificar se ja foi digitado ou nao: ");
-                getchar();
-                fgets(verifica,sizeof(verifica),stdin);
-                int teste = verifica_log(verifica, historico, &totalLogs);
-                if (teste != -1){
-                    printf("log encontrado na posicao %d do historico de logs: %s", teste, verifica);
+                printf("1 - criptografar\n2 - descriptografar\nR - ");
+                if (scanf("%d", &op2) != 1){
+                    limpar_buffer();
+                    break;
                 }
-                else{
-                    printf("Log nao encontrato !!!");
+                limpar_buffer();
+                registra_log_int(op2, historico, &totalLogs);
+
+                if (op2 != 1 && op2 != 2){
+                    printf("Opcao invalida!\n");
+                    break;
+                }
+
+                printf("Digite a palavra: ");
+                fgets(palavrac, sizeof(palavrac), stdin);
+                palavrac[strcspn(palavrac, "\n")] = '\0';
+                registra_log_char(palavrac, historico, &totalLogs);
+
+                printf("Digite a chave: ");
+                if (scanf("%d", &chavec) != 1){
+                    limpar_buffer();
+                    break;
+                }
+                limpar_buffer();
+                registra_log_int(chavec, historico, &totalLogs);
+
+                char *resultado;
+                char opNome[10];
+                if (op2 == 1){
+                    resultado = cifrar_cesar(palavrac, chavec);
+                    strcpy(opNome, "cifrada");
+                } else {
+                    resultado = decifrar_cesar(palavrac, chavec);
+                    strcpy(opNome, "decifrada");
+                }
+
+                printf("A palavra %s e: %s\n", opNome, resultado);
+                snprintf(historico[totalLogs], 256,
+                         "A palavra %s e: %s", opNome, resultado);
+                totalLogs++;
+                break;
+            }
+
+            case 4: {
+                char palavrax[50];
+                int  chavex_int;
+
+                printf("Digite a palavra: ");
+                fgets(palavrax, sizeof(palavrax), stdin);
+                palavrax[strcspn(palavrax, "\n")] = '\0';
+                registra_log_char(palavrax, historico, &totalLogs);
+
+                printf("Digite a chave (0-255): ");
+                if (scanf("%d", &chavex_int) != 1){
+                    limpar_buffer();
+                    break;
+                }
+                limpar_buffer();
+                registra_log_int(chavex_int, historico, &totalLogs);
+
+                char chavex = (char)chavex_int;
+                char *cifrado = cifrar_xor(palavrax, chavex);
+
+                char hexbuf[256];
+                string_para_hex(cifrado, hexbuf, 256);
+
+                printf("Hex: %s\nTexto: %s\n", hexbuf, cifrado);
+
+                snprintf(historico[totalLogs], 256,
+                         "[XOR] Hex: %s | Texto: %s", hexbuf, cifrado);
+                totalLogs++;
+                break;
+            }
+
+            case 5: {
+                int op3;
+                printf("1 - consultar log\n2 - listar logs\nR - ");
+                if (scanf("%d", &op3) != 1){
+                    limpar_buffer();
+                    break;
+                }
+                limpar_buffer();
+                registra_log_int(op3, historico, &totalLogs);
+
+                if (op3 == 1){
+                    printf("Digite o termo para verificar: ");
+                    fgets(verifica, sizeof(verifica), stdin);
+                    verifica[strcspn(verifica, "\n")] = '\0';
+
+                    int teste = verifica_log(verifica, historico, &totalLogs);
+                    if (teste != -1){
+                        printf("Log encontrado na posicao %d: %s\n",
+                        teste + 1, historico[teste]);
+                    } else {
+                        printf("Log nao encontrado!\n");
+                    }
+                } else if (op3 == 2){
+                    lista_log(historico, &totalLogs);
+                } else {
+                    printf("Opcao invalida!\n");
                 }
                 break;
             }
-            else if (op3 == 2){
-                lista_log(historico, &totalLogs);
-            }
 
-        case 0:
-            printf("TCHAU");
-            break;
-            
-        default:
-            printf("Opcao invalida !!!");
-            break;
-        
+            case 0:
+                printf("TCHAU\n");
+                break;
+
+            default:
+                printf("Opcao invalida !!!\n");
+                break;
         }
 
-
-    }
-
+    } while (op1 != 0);
 
     return 0;
 }
