@@ -196,21 +196,13 @@ int main(){
             }
 
             case 3: {
-                char palavrac[50];
+                char palavrac[50], *resultado;
                 int  chavec, op2;
 
                 printf("1 - criptografar\n2 - descriptografar\nR - ");
-                if (scanf("%d", &op2) != 1){
-                    limpar_buffer();
-                    break;
-                }
+                scanf("%d", &op2);
                 limpar_buffer();
                 registra_log_int(op2, historico, &totalLogs);
-
-                if (op2 != 1 && op2 != 2){
-                    printf("Opcao invalida!\n");
-                    break;
-                }
 
                 printf("Digite a palavra: ");
                 fgets(palavrac, sizeof(palavrac), stdin);
@@ -218,27 +210,24 @@ int main(){
                 registra_log_char(palavrac, historico, &totalLogs);
 
                 printf("Digite a chave: ");
-                if (scanf("%d", &chavec) != 1){
-                    limpar_buffer();
-                    break;
-                }
+                scanf("%d", &chavec);    
                 limpar_buffer();
                 registra_log_int(chavec, historico, &totalLogs);
 
-                char *resultado;
-                char opNome[10];
                 if (op2 == 1){
                     resultado = cifrar_cesar(palavrac, chavec);
-                    strcpy(opNome, "cifrada");
-                } else {
+                    printf("A palavra cifrada e: %s\n", resultado);
+                    snprintf(historico[totalLogs], 256,"A palavra cifrada e: %s", resultado);
+                    totalLogs++;
+                    //strcpy(opNome, "cifrada");
+                } else if (op2 == 2){
                     resultado = decifrar_cesar(palavrac, chavec);
-                    strcpy(opNome, "decifrada");
+                    printf("A palavra decifrada e: %s\n", resultado);
+                    snprintf(historico[totalLogs], 256,"A palavra decifrada e: %s", resultado);
+                    totalLogs++;
+                    //strcpy(opNome, "decifrada");
                 }
 
-                printf("A palavra %s e: %s\n", opNome, resultado);
-                snprintf(historico[totalLogs], 256,
-                         "A palavra %s e: %s", opNome, resultado);
-                totalLogs++;
                 break;
             }
 
@@ -246,16 +235,13 @@ int main(){
                 char palavrax[50];
                 int  chavex_int;
 
-                printf("Digite a palavra: ");
+                printf("Digite a palavra para cifrar ou decifrar: ");
                 fgets(palavrax, sizeof(palavrax), stdin);
                 palavrax[strcspn(palavrax, "\n")] = '\0';
                 registra_log_char(palavrax, historico, &totalLogs);
 
-                printf("Digite a chave (0-255): ");
-                if (scanf("%d", &chavex_int) != 1){
-                    limpar_buffer();
-                    break;
-                }
+                printf("Digite a chave usada na cifragem ou decifragem(0-255): ");
+                scanf("%d", &chavex_int);
                 limpar_buffer();
                 registra_log_int(chavex_int, historico, &totalLogs);
 
@@ -267,8 +253,7 @@ int main(){
 
                 printf("Hex: %s\nTexto: %s\n", hexbuf, cifrado);
 
-                snprintf(historico[totalLogs], 256,
-                         "[XOR] Hex: %s | Texto: %s", hexbuf, cifrado);
+                snprintf(historico[totalLogs], 256, "Texto na forma de hexadecimal: %s | Texto normal: %s", hexbuf, cifrado);
                 totalLogs++;
                 break;
             }
@@ -276,10 +261,7 @@ int main(){
             case 5: {
                 int op3;
                 printf("1 - consultar log\n2 - listar logs\nR - ");
-                if (scanf("%d", &op3) != 1){
-                    limpar_buffer();
-                    break;
-                }
+                scanf("%d", &op3); 
                 limpar_buffer();
                 registra_log_int(op3, historico, &totalLogs);
 
@@ -297,8 +279,6 @@ int main(){
                     }
                 } else if (op3 == 2){
                     lista_log(historico, &totalLogs);
-                } else {
-                    printf("Opcao invalida!\n");
                 }
                 break;
             }
