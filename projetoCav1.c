@@ -110,7 +110,28 @@ char* cifrar_xor(char palavrax[50], char chavex){
     return copia;
 }
 
-// ---------- Etapa 3 ----------
+void cifrar_log_cesar(char historico[][256], int totalLogs, int chavec, char logCifrado[][256]){
+    for (int i = 0; i < totalLogs; i++){
+        strcpy(logCifrado[i], historico[i]);
+        for (int j = 0; logCifrado[i][j] != '\0'; j++){
+            if (logCifrado[i][j] >= 97 && logCifrado[i][j] <= 122){
+                logCifrado[i][j] = 97 + (logCifrado[i][j] - 97 + chavec) % 26;
+            }
+            else if (logCifrado[i][j] >= 65 && logCifrado[i][j] <= 90){
+                logCifrado[i][j] = 65 + (logCifrado[i][j] - 65 + chavec) % 26;
+            }
+        }
+    }
+}
+
+void cifrar_log_xor(char historico[][256], int totalLogs, char chavex, char logCifrado[][256]){
+    for (int i = 0; i < totalLogs; i++){
+        strcpy(logCifrado[i], historico[i]);
+        for (int j = 0; logCifrado[i][j] != '\0'; j++){
+            logCifrado[i][j] = logCifrado[i][j] ^ chavex;
+        }
+    }
+}
 
 void registra_log_int(int log, char historico[][256], int *totalLogs){
     if (*totalLogs < 100){
@@ -139,14 +160,36 @@ int verifica_log(char *log, char historico[][256], int *totalLogs){
     return -1;
 }
 
-void lista_log(char historico[][256], int *totalLogs){
+void lista_log(char historico[][256], int *totalLogs, int tipoCifra, int chave){
+    char logCifrado[100][256];
+
+    if (tipoCifra == 1){
+        cifrar_log_cesar(historico, *totalLogs, chave, logCifrado);
+
+    } else if (tipoCifra == 2){
+        cifrar_log_xor(historico, *totalLogs, (char)chave, logCifrado);
+
+    } else {
+        for (int i = 0; i < *totalLogs; i++){
+            strcpy(logCifrado[i], historico[i]);
+        }
+    }
+
     printf("-===- REGISTRO DE LOGS -===-\n");
+    if (tipoCifra == 1){
+        printf("Cifra utilizada: Cifra de Cesar\n");
+    } else if (tipoCifra == 2){
+        printf("Cifra utilizada: XOR\n");
+    } else {
+        printf("Cifra utilizada: Nenhuma\n");
+    }
+
     for (int i = 0; i < *totalLogs; i++){
-        printf("%d - %s\n", i + 1, historico[i]);
+        printf("%d - %s\n", i + 1, logCifrado[i]);
     }
 }
 
-// ---------- Main ----------
+
 
 int main(){
     char historico[100][256];
@@ -259,11 +302,11 @@ int main(){
             }
 
             case 5: {
-                int op3;
+                int op3, tipoCifra, chave;
+
                 printf("1 - consultar log\n2 - listar logs\nR - ");
-                scanf("%d", &op3); 
+                scanf("%d", &op3);
                 limpar_buffer();
-                registra_log_int(op3, historico, &totalLogs);
 
                 if (op3 == 1){
                     printf("Digite o termo para verificar: ");
@@ -278,7 +321,15 @@ int main(){
                         printf("Log nao encontrado!\n");
                     }
                 } else if (op3 == 2){
-                    lista_log(historico, &totalLogs);
+                    printf("Escolha a cifra para os logs:\n1 - Cifra de Cesar\n2 - XOR\nR - ");
+                    scanf("%d", &tipoCifra);
+                    limpar_buffer();
+
+                    printf("Digite a chave da cifra: ");
+                    scanf("%d", &chave);
+                    limpar_buffer();
+
+                    lista_log(historico, &totalLogs, tipoCifra, chave);
                 }
                 break;
             }
